@@ -7,14 +7,16 @@ namespace Northwind.Editor.Shader
 {
     public static class MatEdit
     {
+        #region MatEdit_Customizations
 
-        #region MatEdit_Enums
+        public enum PackagePart {x, y, z, w};
 
-        public enum PropertyParts { x, y, z, w };
-        public enum HirarchyLayer { Main, Sub };
+        public enum GroupStyles {Main = 0, Sub = 1};
+        private static GUIStyle[] groupStyles = new GUIStyle[] {EditorStyles.miniButton, EditorStyles.helpBox};
+
         public enum TextureFieldType {Small = 16, Medium = 32, Large = 64};
 
-        #endregion MatEdit_Enums
+        #endregion MatEdit_Customizations
 
         #region MatEdit_Stats
 
@@ -67,41 +69,97 @@ namespace Northwind.Editor.Shader
 
         #endregion MatEdit_HelperFunctions
 
-        ///////////////
-        //Scoper
+        #region SettingsFunctions
 
         public static void SetScope(Material material)
         {
             scopeMaterial = material;
         }
 
-        ///////////////
-        //Groups
+        #endregion SettingsFunctions
 
-        public static bool BeginFoldOut(GUIContent content, string toggleID)
+        //Editor Part
+
+        #region GroupFields
+
+        //Fold Group
+        public static bool BeginFoldGroup(GUIContent content, string toggleID, GroupStyles style = GroupStyles.Main, bool spacing = false)
         {
-            return BeginFoldOut(content, toggleID, scopeMaterial);
+            return BeginFoldGroup(content, toggleID, scopeMaterial, style, spacing);
         }
 
-        public static bool BeginFoldOut(GUIContent content, string toggleID, Material material)
+        public static bool BeginFoldGroup(GUIContent content, string toggleID, Material material, GroupStyles style = GroupStyles.Main, bool spacing = false)
         {
             string lKey = "MatEdit:" + material.GetInstanceID() + "-> ToggleID:" + toggleID;
 
-            EditorGUILayout.BeginVertical(EditorStyles.miniButton);
+            EditorGUILayout.BeginVertical(groupStyles[(int)style]);
 
             if (GUILayout.Button(content, EditorStyles.boldLabel))
                 EditorPrefs.SetBool(lKey, !EditorPrefs.GetBool(lKey));
 
+            if (spacing)
+            {
+                EditorGUILayout.Space();
+            }
+
             return EditorPrefs.GetBool(lKey);
         }
 
-        public static void EndGroup()
+        //Toggle Group
+        public static bool BeginToggleGroup(GUIContent content, string toggleID, GroupStyles style = GroupStyles.Main, bool spacing = false)
         {
+            return BeginToggleGroup(content, toggleID, scopeMaterial, style, spacing);
+        }
+
+        public static bool BeginToggleGroup(GUIContent content, string toggleID, Material material, GroupStyles style = GroupStyles.Main, bool spacing = false)
+        {
+            string lKey = "MatEdit:" + material.GetInstanceID() + "-> ToggleID:" + toggleID;
+
+            EditorGUILayout.BeginVertical(groupStyles[(int)style]);
+
+            bool toggle = EditorPrefs.GetBool(lKey);
+            toggle = EditorGUILayout.BeginToggleGroup(content, toggle);
+            EditorGUILayout.EndToggleGroup();
+            EditorPrefs.SetBool(lKey, toggle);
+
+            if (spacing)
+            {
+                EditorGUILayout.Space();
+            }
+
+            return EditorPrefs.GetBool(lKey);
+        }
+
+        //Static Group
+        public static void BeginGroup(GUIContent content, GroupStyles style = GroupStyles.Main, bool spacing = false)
+        {
+            BeginGroup(content, scopeMaterial, style, spacing);
+        }
+
+        public static void BeginGroup(GUIContent content, Material material, GroupStyles style = GroupStyles.Main, bool spacing = false)
+        {
+            EditorGUILayout.BeginVertical(groupStyles[(int)style]);
+            EditorGUILayout.LabelField(content, EditorStyles.boldLabel);
+
+            if (spacing)
+            {
+                EditorGUILayout.Space();
+            }
+        }
+
+        //End Current Group
+        public static void EndGroup(bool spacing = false)
+        {
+            if (spacing)
+            {
+                EditorGUILayout.Space();
+            }
             EditorGUILayout.EndVertical();
         }
 
-        ///////////////
-        //Texture Fields
+        #endregion GroupFields
+
+        #region TextureFields
 
         public static void TextureField(GUIContent content, string property, TextureFieldType size = TextureFieldType.Small)
         {
@@ -146,8 +204,9 @@ namespace Northwind.Editor.Shader
             material.SetTexture(property, normalTexture);
         }
 
-        ///////////////
-        //Simple Fields
+        #endregion TextureFields
+
+        #region SimpleFields
 
         //Color Field
         public static void ColorField(GUIContent content, string property)
@@ -198,16 +257,49 @@ namespace Northwind.Editor.Shader
             material.SetFloat(property, lValue);
         }
 
-        ///////////////
-        //Special Fields
-
-        //AnimationCurve Field
-        public static void AnimationCurveField(GUIContent content, string property)
+        //Packed Float Field
+        public static void FloatPackedField(GUIContent content, string property, PackagePart part)
         {
-            AnimationCurveField(content, property, scopeMaterial);
+            FloatPackedField(content, property, scopeMaterial, part);
         }
 
-        public static void AnimationCurveField(GUIContent content, string property, Material material)
+        public static void FloatPackedField(GUIContent content, string property, Material material, PackagePart part)
+        {
+            Vector4 lOriginal = material.GetVector(property);
+
+            lOriginal[(int)part] = EditorGUILayout.FloatField(content, lOriginal[(int)part]);
+            material.SetVector(property, lOriginal);
+        }
+
+        //Packed Slider Field
+        public static void SliderPackedField(GUIContent content, string property, float min, float max, PackagePart part, bool round = false)
+        {
+            SliderPackedField(content, property, min, max, scopeMaterial, part, round);
+        }
+
+        public static void SliderPackedField(GUIContent content, string property, float min, float max, Material material, PackagePart part, bool round = false)
+        {
+            Vector4 lOriginal = material.GetVector(property);
+
+            lOriginal[(int)part] = EditorGUILayout.Slider(content, lOriginal[(int)part], min, max);
+            if (round)
+            {
+                lOriginal[(int)part] = Mathf.Round(lOriginal[(int)part]);
+            }
+            material.SetVector(property, lOriginal);
+        }
+
+        #endregion SimpleFields
+
+        #region SpecialFields
+
+        //AnimationCurve Field
+        public static void AnimationCurveField(GUIContent content, string property, int quality, bool debug = false)
+        {
+            AnimationCurveField(content, property, quality, scopeMaterial, debug);
+        }
+
+        public static void AnimationCurveField(GUIContent content, string property, int quality, Material material, bool debug = false)
         {
             string getJSON = EditorPrefs.GetString(material.GetInstanceID() + ":Animation Curve:" + property);
             AnimationCurve curve;
@@ -229,8 +321,10 @@ namespace Northwind.Editor.Shader
             string setJSON = JsonUtility.ToJson(new AnimationCurveContainer(curve));
             EditorPrefs.SetString(material.GetInstanceID() + ":Animation Curve:" + property, setJSON);
 
-            Texture2D mainTexture = AnimationCurveToTexture(curve, 1024);
+            Texture2D mainTexture = AnimationCurveToTexture(curve, quality, debug);
             material.SetTexture(property, mainTexture);
         }
+
+        #endregion SpecialFields
     }
 }
