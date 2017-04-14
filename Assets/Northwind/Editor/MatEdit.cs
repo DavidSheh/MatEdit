@@ -289,6 +289,26 @@ namespace Northwind.Editor.Shader
             material.SetVector(property, lOriginal);
         }
 
+        //Vector Field
+        public static void VectorField(GUIContent content, string property, params PackagePart[] part)
+        {
+            VectorField(content, property, scopeMaterial, part);
+        }
+
+        public static void VectorField(GUIContent content, string property, Material material, params PackagePart[] part)
+        {
+            Vector4 lOriginal = material.GetVector(property);
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.PrefixLabel(content);
+            for (int p = 0; p < part.Length; p++)
+            {
+                lOriginal[(int)part[p]] = EditorGUILayout.FloatField(lOriginal[(int)part[p]]);
+            }
+            EditorGUILayout.EndHorizontal();
+            material.SetVector(property, lOriginal);
+        }
+
         #endregion SimpleFields
 
         #region SpecialFields

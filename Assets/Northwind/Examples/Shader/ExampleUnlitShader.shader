@@ -9,6 +9,8 @@ Shader "Northwind/Examples/MatEdit"
 
 		_ScrollingDuration ("Texture Scrolling Duration", float) = 5
 		_ScrollingSpeed ("Texture Scrolling Speed", 2D) = "black" {}
+
+		_TestVector ("Test Vector", Vector) = (0,0,0,0)
 	}
 	SubShader
 	{
@@ -39,6 +41,8 @@ Shader "Northwind/Examples/MatEdit"
 			
 			float _ScrollingDuration;
 			sampler2D _ScrollingSpeed;
+
+			float4 _TestVector;
 			
 			v2f vert (appdata v)
 			{
