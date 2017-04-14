@@ -43,7 +43,11 @@ namespace Northwind.Editor.Shader
 
         private static Texture2D AnimationCurveToTexture(AnimationCurve curve, int steps, bool debug = false)
         {
-            float lStartTime = Time.time;
+            System.Diagnostics.Stopwatch lWatch = new System.Diagnostics.Stopwatch();
+            if (debug)
+            {
+                lWatch.Start();
+            }
 
             Texture2D lResult = new Texture2D(steps, 1);
 
@@ -61,7 +65,8 @@ namespace Northwind.Editor.Shader
 
             if (debug)
             {
-                Debug.Log("<color=green>Success:</color> Converted AnimationCurve to Texture2D in " + (Time.time - lStartTime));
+                lWatch.Stop();
+                Debug.Log("<color=green>Success:</color> Converted AnimationCurve to Texture2D in " + lWatch.ElapsedMilliseconds + "ms");
             }
 
             return lResult;
