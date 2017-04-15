@@ -72,6 +72,36 @@ namespace Northwind.Editor.Shader
             return lResult;
         }
 
+        private static Texture2D GradientToTexture(Gradient gradiant, int steps, bool debug = false)
+        {
+            System.Diagnostics.Stopwatch lWatch = new System.Diagnostics.Stopwatch();
+            if (debug)
+            {
+                lWatch.Start();
+            }
+
+            Texture2D lResult = new Texture2D(steps, 1);
+
+            Color[] lPixels = new Color[steps];
+            float length = steps;
+            for (int p = 0; p < steps; p++)
+            {
+                float point = p;
+                lPixels[p] = gradiant.Evaluate(point / length);
+            }
+
+            lResult.SetPixels(lPixels);
+            lResult.Apply();
+
+            if (debug)
+            {
+                lWatch.Stop();
+                Debug.Log("<color=green>Success:</color> Converted Gradient to Texture2D in " + lWatch.ElapsedMilliseconds + "ms");
+            }
+
+            return lResult;
+        }
+
         #endregion MatEdit_HelperFunctions
 
         #region SettingsFunctions
@@ -209,6 +239,22 @@ namespace Northwind.Editor.Shader
             material.SetTexture(property, normalTexture);
         }
 
+        public static void TextureDataField(GUIContent content, string property)
+        {
+            TextureDataField(content, property, scopeMaterial);
+        }
+
+        public static void TextureDataField(GUIContent content, string property, Material material)
+        {
+            if (content.text != "")
+            {
+                EditorGUILayout.LabelField(content);
+            }
+
+            MatEdit.VectorField(new GUIContent("Tiling", ""), property, PackagePart.x, PackagePart.y);
+            MatEdit.VectorField(new GUIContent("Offset", ""), property, PackagePart.z, PackagePart.w);
+        }
+
         #endregion TextureFields
 
         #region SimpleFields
@@ -233,6 +279,17 @@ namespace Northwind.Editor.Shader
         public static void ToggleField(GUIContent content, string property, Material material)
         {
             material.SetInt(property, EditorGUILayout.Toggle(content, material.GetInt(property) == 1 ? true : false) ? 1 : 0);
+        }
+
+        //Int Field
+        public static void IntField(GUIContent content, string property)
+        {
+            IntField(content, property, scopeMaterial);
+        }
+
+        public static void IntField(GUIContent content, string property, Material material)
+        {
+            material.SetInt(property, EditorGUILayout.IntField(content, material.GetInt(property)));
         }
 
         //Float Field

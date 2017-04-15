@@ -16,6 +16,7 @@ public class ExampleUnlitShader_Editor : ShaderGUI
         MatEdit.BeginGroup(new GUIContent("Main", ""), MatEdit.GroupStyles.Main);
 
         MatEdit.TextureField(new GUIContent("Main Texture", "The main texture for the material"), "_MainTex");
+        MatEdit.TextureDataField(new GUIContent("", ""), "_MainTex_ST");
         MatEdit.ColorField(new GUIContent("Tint Color", "The tint color for the main texture"), "_TintColor");
 
         MatEdit.EndGroup();

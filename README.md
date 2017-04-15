@@ -1,4 +1,4 @@
-# MatEdit
+# MatEdit for Unity3D
 ## Introduction
 MatEdit is an open-source script which you can use to make good looking custom editors for shaders very fast and without any affort.
 
@@ -20,11 +20,11 @@ MatEdit is an open-source script which you can use to make good looking custom e
 **Texture Fields**
 - [x] Texture Field
 - [x] Normal Map Field
-- [ ] Tiling Field // Basically Vector Field
-- [ ] Offset Field // Basically Vector Field
+- [x] Tiling Field // Basically Vector Field
+- [x] Offset Field // Basically Vector Field
 
 **Simple Fields**
-- [ ] Int Field
+- [x] Int Field
 - [x] Float Field
 - [x] Slider Field
 - [x] Toggle Field
