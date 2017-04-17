@@ -28,6 +28,7 @@ MatEdit is an open-source script which you can use to make good looking custom e
 - [x] Float Field
 - [x] Slider Field
 - [x] Toggle Field
+- [x] Color Field
 - [x] Vector Field
 
 **Special Fields**
