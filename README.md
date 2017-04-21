@@ -25,10 +25,13 @@ MatEdit is an open-source script which you can use to make good looking custom e
 
 **Simple Fields**
 - [x] Int Field
+- [x] Enum Field
 - [x] Float Field
 - [x] Slider Field
+- [x] Min Max Slider Field
 - [x] Toggle Field
 - [x] Color Field
+- [x] Float As Vector Field
 - [x] Vector Field
 
 **Special Fields**
