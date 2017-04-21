@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace Northwind.Editor.Shader
+namespace Northwind.Editors.Shaders
 {
     public static class MatEdit
     {
@@ -118,51 +118,83 @@ namespace Northwind.Editor.Shader
         #region GroupFields
 
         //Fold Group
-        public static bool BeginFoldGroup(GUIContent content, string toggleID, GroupStyles style = GroupStyles.Main, bool spacing = false)
+        public static bool BeginFoldGroup(GUIContent content, string toggleID, GroupStyles style = GroupStyles.Main, bool spacing = false, bool writeToShader = false)
         {
-            return BeginFoldGroup(content, toggleID, scopeMaterial, style, spacing);
+            return BeginFoldGroup(content, toggleID, scopeMaterial, style, spacing, writeToShader);
         }
 
-        public static bool BeginFoldGroup(GUIContent content, string toggleID, Material material, GroupStyles style = GroupStyles.Main, bool spacing = false)
+        public static bool BeginFoldGroup(GUIContent content, string toggleID, Material material, GroupStyles style = GroupStyles.Main, bool spacing = false, bool writeToShader = false)
         {
             string lKey = "MatEdit:" + material.GetInstanceID() + "-> ToggleID:" + toggleID;
 
             EditorGUILayout.BeginVertical(groupStyles[(int)style]);
 
             if (GUILayout.Button(content, EditorStyles.boldLabel))
-                EditorPrefs.SetBool(lKey, !EditorPrefs.GetBool(lKey));
+            {
+                if (writeToShader)
+                {
+                    material.SetInt(toggleID, scopeMaterial.GetInt(toggleID) == 1 ? 0 : 1);
+                }
+                else
+                {
+                    EditorPrefs.SetBool(lKey, !EditorPrefs.GetBool(lKey));
+                }
+            }
 
             if (spacing)
             {
                 EditorGUILayout.Space();
             }
 
-            return EditorPrefs.GetBool(lKey);
+            if (writeToShader)
+            {
+                return material.GetInt(toggleID) == 1;
+            }
+            else
+            {
+                return EditorPrefs.GetBool(lKey);
+            }
         }
 
         //Toggle Group
-        public static bool BeginToggleGroup(GUIContent content, string toggleID, GroupStyles style = GroupStyles.Main, bool spacing = false)
+        public static bool BeginToggleGroup(GUIContent content, string toggleID, GroupStyles style = GroupStyles.Main, bool spacing = false, bool writeToShader = false)
         {
-            return BeginToggleGroup(content, toggleID, scopeMaterial, style, spacing);
+            return BeginToggleGroup(content, toggleID, scopeMaterial, style, spacing, writeToShader);
         }
 
-        public static bool BeginToggleGroup(GUIContent content, string toggleID, Material material, GroupStyles style = GroupStyles.Main, bool spacing = false)
+        public static bool BeginToggleGroup(GUIContent content, string toggleID, Material material, GroupStyles style = GroupStyles.Main, bool spacing = false, bool writeToShader = false)
         {
             string lKey = "MatEdit:" + material.GetInstanceID() + "-> ToggleID:" + toggleID;
 
             EditorGUILayout.BeginVertical(groupStyles[(int)style]);
 
-            bool toggle = EditorPrefs.GetBool(lKey);
+            bool toggle = false;
+            if (writeToShader)
+            {
+                toggle = material.GetInt(toggleID) == 1;
+            }
+            else
+            {
+                toggle = EditorPrefs.GetBool(lKey);
+            }
             toggle = EditorGUILayout.BeginToggleGroup(content, toggle);
             EditorGUILayout.EndToggleGroup();
-            EditorPrefs.SetBool(lKey, toggle);
+
+            if (writeToShader)
+            {
+                material.SetInt(toggleID, toggle ? 1 : 0);
+            }
+            else
+            {
+                EditorPrefs.SetBool(lKey, toggle);
+            }
 
             if (spacing)
             {
                 EditorGUILayout.Space();
             }
 
-            return EditorPrefs.GetBool(lKey);
+            return toggle;
         }
 
         //Static Group

@@ -2,7 +2,7 @@
 using UnityEditor;
 using System;
 
-using Northwind.Editor.Shader;
+using Northwind.Editors.Shaders;
 
 public class ExampleUnlitShader_Editor : ShaderGUI
 {
