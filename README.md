@@ -36,7 +36,7 @@ MatEdit is an open-source script which you can use to make good looking custom e
 
 **Special Fields**
 - [x] Animation Curve Field
-- [ ] Gradient Field
+- [x] Gradient Field
 - [ ] Color Curves Field
 
 **Tools**

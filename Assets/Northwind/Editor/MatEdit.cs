@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System.Reflection;
 
 namespace Northwind.Editors.Shaders
 {
@@ -34,6 +35,17 @@ namespace Northwind.Editors.Shaders
             public AnimationCurveContainer(AnimationCurve curve)
             {
                 localCurve = curve;
+            }
+        }
+
+        [System.Serializable]
+        private class GradientContainer
+        {
+            public Gradient localGradient;
+
+            public GradientContainer(Gradient gradient)
+            {
+                localGradient = gradient;
             }
         }
 
@@ -553,6 +565,42 @@ namespace Northwind.Editors.Shaders
             EditorPrefs.SetString(material.GetInstanceID() + ":Animation Curve:" + property, setJSON);
 
             Texture2D mainTexture = AnimationCurveToTexture(curve, quality, debug);
+            material.SetTexture(property, mainTexture);
+        }
+
+        //Gradient Field
+        public static void GradientField(GUIContent content, string property, int quality, bool debug = false)
+        {
+            GradientField(content, property, quality, scopeMaterial, debug);
+        }
+
+        public static void GradientField(GUIContent content, string property, int quality, Material material, bool debug = false)
+        {
+            string getJSON = EditorPrefs.GetString(material.GetInstanceID() + ":Gradient:" + property);
+            Gradient gradient;
+            if (getJSON != "")
+            {
+                gradient = JsonUtility.FromJson<GradientContainer>(getJSON).localGradient;
+            }
+            else
+            {
+                gradient = null;
+            }
+
+            if (gradient == null)
+            {
+                gradient = new Gradient();
+            }
+
+            MethodInfo method = typeof(EditorGUILayout).GetMethod("GradientField", BindingFlags.Static | BindingFlags.NonPublic, null, new System.Type[] { typeof(GUIContent), typeof(Gradient), typeof(GUILayoutOption[]) }, null);
+            if (method != null)
+            {
+                gradient = (Gradient)method.Invoke(null, new object[] { content, gradient, new GUILayoutOption[] { } });
+            }
+            string setJSON = JsonUtility.ToJson(new GradientContainer(gradient));
+            EditorPrefs.SetString(material.GetInstanceID() + ":Gradient:" + property, setJSON);
+
+            Texture2D mainTexture = GradientToTexture(gradient, quality, debug);
             material.SetTexture(property, mainTexture);
         }
 

@@ -11,6 +11,8 @@ Shader "Northwind/Examples/MatEdit"
 		_ScrollingSpeed ("Texture Scrolling Speed", 2D) = "black" {}
 
 		_TestVector ("Test Vector", Vector) = (0,0,0,0)
+
+		_TestGradient ("Test Gradient", 2D) = "white" {}
 	}
 	SubShader
 	{
@@ -43,6 +45,8 @@ Shader "Northwind/Examples/MatEdit"
 			sampler2D _ScrollingSpeed;
 
 			float4 _TestVector;
+
+			sampler2D _TestGradient;
 			
 			v2f vert (appdata v)
 			{
@@ -60,6 +64,7 @@ Shader "Northwind/Examples/MatEdit"
 				float lScrollSpeed = lScrollSpeedRaw.x + lScrollSpeedRaw.y + lScrollSpeedRaw.z;
 
 				float4 col = tex2D(_MainTex, i.uv + _Time.y + float2(1, 0) * lScrollSpeed) * _TintColor;
+				col = tex2D(_TestGradient, i.uv);
 				return col;
 			}
 			ENDCG

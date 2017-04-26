@@ -33,6 +33,8 @@ public class ExampleUnlitShader_Editor : ShaderGUI
             MatEdit.VectorField(new GUIContent("Text Vector 2", "A test vector field"), "_TestVector", MatEdit.PackagePart.x, MatEdit.PackagePart.y);
             MatEdit.VectorField(new GUIContent("Text Vector 3", "A test vector field"), "_TestVector", MatEdit.PackagePart.x, MatEdit.PackagePart.y, MatEdit.PackagePart.z);
             MatEdit.VectorField(new GUIContent("Text Vector 4", "A test vector field"), "_TestVector", MatEdit.PackagePart.x, MatEdit.PackagePart.y, MatEdit.PackagePart.z, MatEdit.PackagePart.w);
+
+            MatEdit.GradientField(new GUIContent("Test Gradient", "A test gradient field"), "_TestGradient", 64, targetMat);
         }
         MatEdit.EndGroup();
         
