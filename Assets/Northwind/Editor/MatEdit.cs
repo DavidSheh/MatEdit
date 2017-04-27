@@ -25,32 +25,6 @@ namespace Northwind.Editors.Shaders
 
         #endregion MatEdit_Stats
 
-        #region MatEdit_HelperClasses
-
-        [System.Serializable]
-        private class AnimationCurveContainer
-        {
-            public AnimationCurve localCurve;
-
-            public AnimationCurveContainer(AnimationCurve curve)
-            {
-                localCurve = curve;
-            }
-        }
-
-        [System.Serializable]
-        private class GradientContainer
-        {
-            public Gradient localGradient;
-
-            public GradientContainer(Gradient gradient)
-            {
-                localGradient = gradient;
-            }
-        }
-
-        #endregion MatEdit_HelperClasses
-
         #region MatEdit_HelperFunctions
 
         private static Texture2D AnimationCurveToTexture(AnimationCurve curve, int steps, bool debug = false)
@@ -114,6 +88,22 @@ namespace Northwind.Editors.Shaders
             return lResult;
         }
 
+        private static MatEditData GetMatEditData(Material material)
+        {
+            string lMaterialPath = AssetDatabase.GetAssetPath(material);
+            MatEditData lData = AssetDatabase.LoadAssetAtPath<MatEditData>(lMaterialPath);
+            if (lData == null)
+            {
+                lData = ScriptableObject.CreateInstance(typeof(MatEditData)) as MatEditData;
+                lData.name = "MatEditData";
+                AssetDatabase.AddObjectToAsset(lData, material);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+
+            return lData;
+        }
+
         #endregion MatEdit_HelperFunctions
 
         #region SettingsFunctions
@@ -137,7 +127,14 @@ namespace Northwind.Editors.Shaders
 
         public static bool BeginFoldGroup(GUIContent content, string toggleID, Material material, GroupStyles style = GroupStyles.Main, bool spacing = false, bool writeToShader = false)
         {
-            string lKey = "MatEdit:" + material.GetInstanceID() + "-> ToggleID:" + toggleID;
+            MatEditData lData = GetMatEditData(material);
+            if (!writeToShader)
+            {
+                if (!lData.toggles.ContainsKey(toggleID))
+                {
+                    lData.toggles.Add(toggleID, false);
+                }
+            }
 
             EditorGUILayout.BeginVertical(groupStyles[(int)style]);
 
@@ -149,7 +146,7 @@ namespace Northwind.Editors.Shaders
                 }
                 else
                 {
-                    EditorPrefs.SetBool(lKey, !EditorPrefs.GetBool(lKey));
+                    lData.toggles[toggleID] = !lData.toggles[toggleID];
                 }
             }
 
@@ -164,7 +161,7 @@ namespace Northwind.Editors.Shaders
             }
             else
             {
-                return EditorPrefs.GetBool(lKey);
+                return lData.toggles[toggleID];
             }
         }
 
@@ -176,7 +173,14 @@ namespace Northwind.Editors.Shaders
 
         public static bool BeginToggleGroup(GUIContent content, string toggleID, Material material, GroupStyles style = GroupStyles.Main, bool spacing = false, bool writeToShader = false)
         {
-            string lKey = "MatEdit:" + material.GetInstanceID() + "-> ToggleID:" + toggleID;
+            MatEditData lData = GetMatEditData(material);
+            if (!writeToShader)
+            {
+                if (!lData.toggles.ContainsKey(toggleID))
+                {
+                    lData.toggles.Add(toggleID, false);
+                }
+            }
 
             EditorGUILayout.BeginVertical(groupStyles[(int)style]);
 
@@ -187,7 +191,7 @@ namespace Northwind.Editors.Shaders
             }
             else
             {
-                toggle = EditorPrefs.GetBool(lKey);
+                toggle = lData.toggles[toggleID];
             }
             toggle = EditorGUILayout.BeginToggleGroup(content, toggle);
             EditorGUILayout.EndToggleGroup();
@@ -198,7 +202,7 @@ namespace Northwind.Editors.Shaders
             }
             else
             {
-                EditorPrefs.SetBool(lKey, toggle);
+                lData.toggles[toggleID] = toggle;
             }
 
             if (spacing)
@@ -544,25 +548,21 @@ namespace Northwind.Editors.Shaders
 
         public static void AnimationCurveField(GUIContent content, string property, int quality, Material material, bool debug = false)
         {
-            string getJSON = EditorPrefs.GetString(material.GetInstanceID() + ":Animation Curve:" + property);
-            AnimationCurve curve;
-            if (getJSON != "")
+            MatEditData lData = GetMatEditData(material);
+            AnimationCurve curve = new AnimationCurve();
+            if (lData.animationCurves.ContainsKey(property))
             {
-                curve = JsonUtility.FromJson<AnimationCurveContainer>(getJSON).localCurve;
+                curve = lData.animationCurves[property];
             }
             else
             {
-                curve = null;
-            }
-
-            if (curve == null)
-            {
-                curve = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(1f, 1f));
+                lData.animationCurves.Add(property, curve);
             }
 
             curve = EditorGUILayout.CurveField(content, curve);
-            string setJSON = JsonUtility.ToJson(new AnimationCurveContainer(curve));
-            EditorPrefs.SetString(material.GetInstanceID() + ":Animation Curve:" + property, setJSON);
+
+            lData.animationCurves[property] = curve;
+            EditorUtility.SetDirty(lData);
 
             Texture2D mainTexture = AnimationCurveToTexture(curve, quality, debug);
             material.SetTexture(property, mainTexture);
@@ -576,20 +576,13 @@ namespace Northwind.Editors.Shaders
 
         public static void GradientField(GUIContent content, string property, int quality, Material material, bool debug = false)
         {
-            string getJSON = EditorPrefs.GetString(material.GetInstanceID() + ":Gradient:" + property);
-            Gradient gradient;
-            if (getJSON != "")
+            MatEditData lData = GetMatEditData(material);
+            Gradient gradient = new Gradient();
+            if (lData.gradients.ContainsKey(property)) {
+                gradient = lData.gradients[property];
+            } else
             {
-                gradient = JsonUtility.FromJson<GradientContainer>(getJSON).localGradient;
-            }
-            else
-            {
-                gradient = null;
-            }
-
-            if (gradient == null)
-            {
-                gradient = new Gradient();
+                lData.gradients.Add(property, gradient);
             }
 
             MethodInfo method = typeof(EditorGUILayout).GetMethod("GradientField", BindingFlags.Static | BindingFlags.NonPublic, null, new System.Type[] { typeof(GUIContent), typeof(Gradient), typeof(GUILayoutOption[]) }, null);
@@ -597,8 +590,9 @@ namespace Northwind.Editors.Shaders
             {
                 gradient = (Gradient)method.Invoke(null, new object[] { content, gradient, new GUILayoutOption[] { } });
             }
-            string setJSON = JsonUtility.ToJson(new GradientContainer(gradient));
-            EditorPrefs.SetString(material.GetInstanceID() + ":Gradient:" + property, setJSON);
+
+            lData.gradients[property] = gradient;
+            EditorUtility.SetDirty(lData);
 
             Texture2D mainTexture = GradientToTexture(gradient, quality, debug);
             material.SetTexture(property, mainTexture);
