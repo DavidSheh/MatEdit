@@ -19,6 +19,13 @@ public class MatEditData : ScriptableObject {
     [SerializeField]
     public BoolDictionary toggles = new BoolDictionary();
 
+    [System.Serializable]
+    public class TextureDictonary : SerializableDictionary<string, Texture2D> { }
+    [SerializeField]
+    public TextureDictonary generatedTextures = new TextureDictonary();
+
+    [SerializeField]
+    public TextureDictonary unsavedTextures = new TextureDictonary();
 }
 
 [System.Serializable]

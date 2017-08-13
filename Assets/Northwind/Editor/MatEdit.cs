@@ -23,6 +23,10 @@ namespace Northwind.Editors.Shaders
 
         private static Material scopeMaterial;
 
+        private static Material focusMaterial;
+
+        private static bool markedForSave;
+
         #endregion MatEdit_Stats
 
         #region MatEdit_HelperFunctions
@@ -102,6 +106,48 @@ namespace Northwind.Editors.Shaders
             }
 
             return lData;
+        }
+
+        private static void CheckToSave()
+        {
+            MatEditData lData = GetMatEditData(focusMaterial);
+
+            foreach(KeyValuePair<string, Texture2D> tex in lData.unsavedTextures)
+            {
+                if (lData.generatedTextures.ContainsKey(tex.Key))
+                {
+                    Texture2D oldTexture = lData.generatedTextures[tex.Key];
+                    oldTexture.SetPixels(tex.Value.GetPixels());
+                    
+                    EditorUtility.SetDirty(oldTexture);
+                }
+                else
+                {
+                    tex.Value.name = tex.Key;
+                    lData.generatedTextures.Add(tex.Key, tex.Value);
+                    AssetDatabase.AddObjectToAsset(tex.Value, focusMaterial);
+                }
+                focusMaterial.SetTexture(tex.Key, lData.generatedTextures[tex.Key]);
+
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+
+            lData.unsavedTextures.Clear();
+            EditorUtility.SetDirty(lData);
+
+            markedForSave = false;
+            Selection.selectionChanged -= CheckToSave;
+        }
+
+        private static void MarkForSave(Material material)
+        {
+            if (markedForSave == false)
+            {
+                Selection.selectionChanged += CheckToSave;
+            }
+            markedForSave = true;
+            focusMaterial = material;
         }
 
         #endregion MatEdit_HelperFunctions
@@ -559,13 +605,30 @@ namespace Northwind.Editors.Shaders
                 lData.animationCurves.Add(property, curve);
             }
 
+            EditorGUI.BeginChangeCheck();
             curve = EditorGUILayout.CurveField(content, curve);
+            bool lEdited = EditorGUI.EndChangeCheck();
 
             lData.animationCurves[property] = curve;
             EditorUtility.SetDirty(lData);
 
-            Texture2D mainTexture = AnimationCurveToTexture(curve, quality, debug);
-            material.SetTexture(property, mainTexture);
+            if (lEdited)
+            {
+                Texture2D mainTexture = AnimationCurveToTexture(curve, quality, debug);
+            
+                if (lData.unsavedTextures.ContainsKey(property))
+                {
+                    lData.unsavedTextures[property] = mainTexture;
+                }
+                else
+                {
+                    lData.unsavedTextures.Add(property, mainTexture);
+                }
+
+                material.SetTexture(property, mainTexture);
+            }
+
+            MarkForSave(material);
         }
 
         //Gradient Field
@@ -585,17 +648,34 @@ namespace Northwind.Editors.Shaders
                 lData.gradients.Add(property, gradient);
             }
 
+            EditorGUI.BeginChangeCheck();
             MethodInfo method = typeof(EditorGUILayout).GetMethod("GradientField", BindingFlags.Static | BindingFlags.NonPublic, null, new System.Type[] { typeof(GUIContent), typeof(Gradient), typeof(GUILayoutOption[]) }, null);
             if (method != null)
             {
                 gradient = (Gradient)method.Invoke(null, new object[] { content, gradient, new GUILayoutOption[] { } });
             }
+            bool lEdited = EditorGUI.EndChangeCheck();
 
-            lData.gradients[property] = gradient;
-            EditorUtility.SetDirty(lData);
+            if (lEdited)
+            {
+                lData.gradients[property] = gradient;
+                EditorUtility.SetDirty(lData);
 
-            Texture2D mainTexture = GradientToTexture(gradient, quality, debug);
-            material.SetTexture(property, mainTexture);
+                Texture2D mainTexture = GradientToTexture(gradient, quality, debug);
+
+                if (lData.unsavedTextures.ContainsKey(property))
+                {
+                    lData.unsavedTextures[property] = mainTexture;
+                }
+                else
+                {
+                    lData.unsavedTextures.Add(property, mainTexture);
+                }
+
+                material.SetTexture(property, mainTexture);
+            }
+
+            MarkForSave(material);
         }
 
         #endregion SpecialFields
