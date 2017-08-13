@@ -4,15 +4,11 @@ using System;
 
 using Northwind.Editors.Shaders;
 
-public class ExampleUnlitShader_Editor : ShaderGUI
+public class ExampleUnlitShader_Editor : MatEditGUI
 {
 
-    public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
+    public override void OnMaterialGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
     {
-        Material targetMat = materialEditor.target as Material;
-
-        MatEdit.SetScope(targetMat);
-
         MatEdit.BeginGroup(new GUIContent("Main", ""), MatEdit.GroupStyles.Main);
 
         MatEdit.TextureField(new GUIContent("Main Texture", "The main texture for the material"), "_MainTex");
@@ -34,7 +30,7 @@ public class ExampleUnlitShader_Editor : ShaderGUI
             MatEdit.VectorField(new GUIContent("Text Vector 3", "A test vector field"), "_TestVector", MatEdit.PackagePart.x, MatEdit.PackagePart.y, MatEdit.PackagePart.z);
             MatEdit.VectorField(new GUIContent("Text Vector 4", "A test vector field"), "_TestVector", MatEdit.PackagePart.x, MatEdit.PackagePart.y, MatEdit.PackagePart.z, MatEdit.PackagePart.w);
 
-            MatEdit.GradientField(new GUIContent("Test Gradient", "A test gradient field"), "_TestGradient", 64, targetMat);
+            MatEdit.GradientField(new GUIContent("Test Gradient", "A test gradient field"), "_TestGradient", 64);
         }
         MatEdit.EndGroup();
         

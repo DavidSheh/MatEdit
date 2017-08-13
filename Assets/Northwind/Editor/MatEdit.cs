@@ -369,6 +369,10 @@ namespace Northwind.Editors.Shaders
 
         public static void ColorField(GUIContent content, string property, Material material)
         {
+            if (!material.HasProperty(property) || material.GetColor(property) == null)
+            {
+                return;
+            }
             material.SetColor(property, EditorGUILayout.ColorField(content, material.GetColor(property)));
         }
 
@@ -570,6 +574,10 @@ namespace Northwind.Editors.Shaders
 
         public static void VectorField(GUIContent content, string property, Material material, params PackagePart[] part)
         {
+            if (!material.HasProperty(property) || material.GetVector(property) == null)
+            {
+                return;
+            }
             Vector4 lOriginal = material.GetVector(property);
 
             EditorGUILayout.BeginHorizontal();
@@ -679,5 +687,52 @@ namespace Northwind.Editors.Shaders
         }
 
         #endregion SpecialFields
+
+        #region AutoFields
+
+        public static void PropertyField(MaterialProperty property, string context = "")
+        {
+            PropertyField(property, scopeMaterial, context);
+        }
+
+        public static void PropertyField(MaterialProperty property, Material material, string context = "")
+        {
+            MaterialProperty.PropType lType = property.type;
+
+            switch (lType)
+            {
+                case MaterialProperty.PropType.Color: ColorField(new GUIContent(property.displayName, context), property.name, material);
+                    break;
+                case MaterialProperty.PropType.Float: FloatField(new GUIContent(property.displayName, context), property.name, material);
+                    break;
+                case MaterialProperty.PropType.Range: SliderField(new GUIContent(property.displayName, context), property.name, property.rangeLimits.x, property.rangeLimits.y, material);
+                    break;
+                case MaterialProperty.PropType.Texture: TextureField(new GUIContent(property.displayName, context), property.name, material, TextureFieldType.Small);
+                    TextureDataField(new GUIContent(), property.name + "_ST");
+                    break;
+                case MaterialProperty.PropType.Vector: VectorField(new GUIContent(property.displayName, context), property.name, material, PackagePart.x, PackagePart.y, PackagePart.z, PackagePart.w);
+                    break;
+            }
+        }
+
+        public static void PropertyField(string property, string context = "")
+        {
+            MaterialProperty lProp = MaterialEditor.GetMaterialProperty(new Object[] { scopeMaterial }, property);
+            if (scopeMaterial.HasProperty(property) && lProp != null)
+            {
+                PropertyField(lProp, context);
+            }
+        }
+
+        public static void PropertyField(string property, Material material, string context = "")
+        {
+            MaterialProperty lProp = MaterialEditor.GetMaterialProperty(new Object[] { material }, property);
+            if (scopeMaterial.HasProperty(property) && lProp != null)
+            {
+                PropertyField(lProp, material, context);
+            }
+        }
+
+        #endregion AutoFields
     }
 }
