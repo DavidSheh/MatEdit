@@ -8,6 +8,7 @@ namespace Northwind.Editors.Shaders
     public abstract class MatEditGUI : ShaderGUI
     {
 
+        //The standard ShaderGUI function
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
             Material targetMat = materialEditor.target as Material;
@@ -18,6 +19,7 @@ namespace Northwind.Editors.Shaders
             EditorGUILayout.HelpBox("Made with MatEdit", MessageType.None);
         }
 
+        //The MatEdit prepared function. Prepared for upcoming features
         public virtual void OnMaterialGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
 

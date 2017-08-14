@@ -4,33 +4,39 @@ using UnityEngine;
 
 namespace Northwind.Editors.Shaders
 {
+    //The data saved in the asset itself
     public class MatEditData : ScriptableObject
     {
-
+        //A dictionary for all animation curves used
         [System.Serializable]
         public class AnimationCurveDictionary : SerializableDictionary<string, AnimationCurve> { }
         [SerializeField]
         public AnimationCurveDictionary animationCurves = new AnimationCurveDictionary();
 
+        //A dictionary for all color gradients used
         [System.Serializable]
         public class GradientDictionary : SerializableDictionary<string, Gradient> { }
         [SerializeField]
         public GradientDictionary gradients = new GradientDictionary();
 
+        //A dictionary for all toggles used for groups etc.
         [System.Serializable]
         public class BoolDictionary : SerializableDictionary<string, bool> { }
         [SerializeField]
         public BoolDictionary toggles = new BoolDictionary();
 
+        //A dictionary for all generated textures via Animation Curve Field or Gradient Field
         [System.Serializable]
         public class TextureDictonary : SerializableDictionary<string, Texture2D> { }
         [SerializeField]
         public TextureDictonary generatedTextures = new TextureDictonary();
 
+        //A dictionary for the textures which have to be saved before running the game
         [SerializeField]
         public TextureDictonary unsavedTextures = new TextureDictonary();
     }
 
+    //A serializable Dictionary - made for saving special data under the asset it self instead of EditorPrefs
     [System.Serializable]
     public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, ISerializationCallbackReceiver
     {
