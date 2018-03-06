@@ -1,7 +1,8 @@
 # MatEdit for Unity3D
 ## Introduction
-MatEdit is an open-source script which you can use to make good looking custom editors for shaders very fast and without any affort.
+MatEdit is a script which you can use to make good looking custom editors for shaders very fast and without any affort.
 
+**MatEdit Version 1 is obsolete. There won't be any updates or improvements in the future. I am working on MatEdit Version 2 at the moment which will come with most of the missing features as well as some improvments and additional features. MatEdit V2 is developed with a lot of UI and UX research and tests which will take longer than expected. Furthermore MatEdit Version2 will work differently. It is developed from scratch with an entirely different approach. Stay tuned on twitter (/NoxNorthwind) or on marian-brinkmann.com**
 
 **Basic Steps:**
 1. Create a new custom editor script for a shader of your choice and put it into an editor folder somewhere in your project.
